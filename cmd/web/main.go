@@ -1,50 +1,71 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/fguler/snippetbox/pkg/models/postgres"
+	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippets *postgres.SnippetRepo
 }
 
 func main() {
 
-	addr := flag.String("addr", ":4000", "HTTP network address")
-
-	flag.Parse()
+	//addr := flag.String("addr", ":4000", "HTTP network address")
+	//flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// load .env vars
+	if err := godotenv.Load(".env"); err != nil {
+		errorLog.Fatal(err)
+	}
+
+	addr := os.Getenv("ADDR")
+	dsn := os.Getenv("DSN")
+
+	// open postgres
+	db, err := openDB(dsn)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer db.Close()
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippets: &postgres.SnippetRepo{DB: db},
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet", app.showSnippet)
-	mux.HandleFunc("/snippet/create", app.createSnippet)
-
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
 	svr := &http.Server{
-		Addr:     *addr,
+		Addr:     addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(),
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
-	err := svr.ListenAndServe()
+	infoLog.Printf("Starting server on %s", addr)
+	err = svr.ListenAndServe()
 
 	errorLog.Fatal(err)
 
+}
+
+//openDB opens postgres connection pool
+func openDB(dns string) (*pgxpool.Pool, error) {
+	db, err := pgxpool.Connect(context.Background(), dns)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 /*

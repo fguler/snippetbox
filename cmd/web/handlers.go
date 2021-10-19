@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -18,7 +17,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s, err := app.snippets.Latest()
-
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -26,25 +24,23 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	data := templateData{Snippets: s}
 
-	//file paths are relative to project root
-	files := []string{
-		"./ui/html/home.page.html",
-		"./ui/html/base.layout.html",
-		"./ui/html/footer.partial.html",
-	}
+	app.render(w, r, "home.page.html", &data)
 
-	ts, err := template.ParseFiles(files...)
+	/* 	//file paths are relative to project root
+	   	files := []string{
+	   		"./ui/html/home.page.html",
+	   		"./ui/html/base.layout.html",
+	   		"./ui/html/footer.partial.html",
+	   	}
 
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	   	ts, err := template.ParseFiles(files...)
 
-	err = ts.Execute(w, data)
+	   	if err != nil {
+	   		app.serverError(w, err)
+	   		return
+	   	}
 
-	if err != nil {
-		app.serverError(w, err)
-	}
+	   	err = ts.Execute(w, data) */
 
 }
 
@@ -70,24 +66,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 
 	data := templateData{Snippet: s}
 
-	files := []string{
-		"./ui/html/show.page.html",
-		"./ui/html/base.layout.html",
-		"./ui/html/footer.partial.html",
-	}
-
-	ts, err := template.ParseFiles(files...)
-
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	err = ts.Execute(w, data)
-
-	if err != nil {
-		app.serverError(w, err)
-	}
+	app.render(w, r, "show.page.html", &data)
 
 }
 

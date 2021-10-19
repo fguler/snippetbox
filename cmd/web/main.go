@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +13,10 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *postgres.SnippetRepo
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *postgres.SnippetRepo
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -40,10 +42,17 @@ func main() {
 	}
 	defer db.Close()
 
+	// Initialize a new template cache...
+	templateCache, err := newTemplateCache("./ui/html/")
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &postgres.SnippetRepo{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &postgres.SnippetRepo{DB: db},
+		templateCache: templateCache,
 	}
 
 	svr := &http.Server{

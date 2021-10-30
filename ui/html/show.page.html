@@ -13,10 +13,10 @@
     </div>
     <pre><code>{{.Content}}</code></pre>
     <div class='metadata'>
-        <time>Created: {{printf "%02d.%02d.%d" .Created.Day .Created.Month
-            .Created.Year}}</time>
-        <time>Expires: {{printf "%02d.%02d.%d" .Expires.Day .Expires.Month
-            .Expires.Year}}</time>
+        <time>Created: {{humanDate .Created}}</time>
+        <time>Expires: {{humanDate .Expires}}</time>
+        <!-- <time>Expires: {{printf "%02d.%02d.%d" .Expires.Day .Expires.Month
+            .Expires.Year}}</time> -->
     </div>
 </div>
 {{end}}

@@ -3,6 +3,7 @@ package main
 import (
 	"html/template"
 	"path/filepath"
+	"time"
 
 	"github.com/fguler/snippetbox/pkg/models"
 )
@@ -13,6 +14,17 @@ type templateData struct {
 	Snippets    []*models.Snippet
 }
 
+// Initialize a template.FuncMap object and store it in a global variable.
+var functions = template.FuncMap{
+	"humanDate": humanDate,
+}
+
+//humanDate formats time and returns human readable string
+func humanDate(t time.Time) string {
+	return t.Format("02 Jan 2006 at 15:04") // should return only one value (or with err)
+}
+
+//newTemplateCache creates template cash and retuns it.
 func newTemplateCache(dir string) (map[string]*template.Template, error) {
 
 	// Initialize a new map to act as the cache.
@@ -35,7 +47,9 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		name := filepath.Base(page)
 
 		// Parse the page template file in to a template set. Page should be first to parse
-		ts, err := template.ParseFiles(page)
+		//ts, err := template.ParseFiles(page)
+		// The template.FuncMap must be registered with the template set before calling ParseFiles()
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}

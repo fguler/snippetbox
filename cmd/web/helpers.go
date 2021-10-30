@@ -24,7 +24,7 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-//render Renders the requested page from cashe and writes it to the response
+//render renders the requested page from cashe and writes it to the response
 func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
 
 	// Retrieve the appropriate template set from the cache based on the page name
@@ -59,7 +59,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	   	} */
 }
 
-//addDefaultData Creates the default template data
+//addDefaultData creates the default template data
 func (app *application) addDefaultData(td *templateData, r *http.Request) *templateData {
 
 	if td == nil {
